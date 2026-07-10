@@ -1,0 +1,34 @@
+return {
+  {
+    "ellisonleao/gruvbox.nvim",
+    priority = 1000,
+    -- Configure Gruvbox and make it the active colorscheme.
+    config = function()
+      require("gruvbox").setup({
+        terminal_colors = true,
+        undercurl = true,
+        underline = true,
+        bold = true,
+        italic = {
+          strings = true,
+          emphasis = true,
+          comments = true,
+          operators = false,
+          folds = true,
+        },
+        strikethrough = true,
+        invert_selection = false,
+        invert_signs = false,
+        invert_tabline = false,
+        inverse = true,
+        contrast = "",
+        palette_overrides = {},
+        overrides = {},
+        dim_inactive = false,
+        transparent_mode = false,
+      })
+      vim.cmd.colorscheme("gruvbox")
+      vim.cmd("highlight LspSignatureActiveParameter guifg=#fabd2f gui=bold")
+    end,
+  },
+}
