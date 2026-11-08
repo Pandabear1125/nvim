@@ -144,11 +144,76 @@ local function patch_telescope_treesitter()
   preview_utils._native_treesitter_patched = true
 end
 
+-- Keep the path filter in Telescope's prompt, but out of the search query.
+local function split_search_prompt(prompt)
+  local separator = prompt:find("  ", 1, true)
+  if not separator then
+    return prompt, ""
+  end
+
+  return prompt:sub(1, separator - 1), vim.trim(prompt:sub(separator + 2))
+end
+
+local function path_matcher(path_filter)
+  path_filter = path_filter:gsub("^%./", "")
+  if not path_filter:find("[*?%[%]{]") then
+    return function(filename)
+      return filename:find(path_filter, 1, true) ~= nil
+    end
+  end
+
+  -- Incomplete globs are normal while typing; show no matches until valid.
+  local ok, regex = pcall(function()
+    return vim.regex("\\C" .. vim.fn.glob2regpat(path_filter))
+  end)
+  return function(filename)
+    return ok and regex:match_str(filename) ~= nil
+  end
+end
+
+-- Filter filenames, never matching the path against a grep result's text.
+local function with_path_filter(opts, sorter)
+  local current_filter = ""
+  local matches_path
+  local original_filter = sorter.filter_function
+  local original_highlighter = sorter.highlighter
+
+  opts.on_input_filter_cb = function(prompt)
+    local query, path_filter = split_search_prompt(prompt)
+    if path_filter ~= current_filter then
+      current_filter = path_filter
+      matches_path = path_filter ~= "" and path_matcher(path_filter) or nil
+    end
+    return { prompt = query }
+  end
+
+  sorter.filter_function = function(self, prompt, entry, ...)
+    if matches_path and not matches_path((entry.filename or ""):gsub("^%./", "")) then
+      return -1, prompt
+    end
+    if original_filter then
+      return original_filter(self, prompt, entry, ...)
+    end
+    return 0, prompt
+  end
+
+  if original_highlighter then
+    sorter.highlighter = function(self, prompt, display)
+      local query = split_search_prompt(prompt)
+      return original_highlighter(self, query, display)
+    end
+  end
+
+  opts.sorter = sorter
+  return opts
+end
+
 -- Open Telescope's file picker with hidden and ignored files included.
 local function find_files()
   local opts = {
     find_command = hidden_find_command(),
     file_ignore_patterns = ignore_dirs,
+    prompt_title = "Find Files (query  path/glob)",
   }
 
   if opts.find_command == nil then
@@ -158,14 +223,16 @@ local function find_files()
     opts.follow = true
   end
 
-  require("telescope.builtin").find_files(opts)
+  require("telescope.builtin").find_files(with_path_filter(opts, require("telescope.config").values.file_sorter(opts)))
 end
 
 -- Search text across hidden and ignored files with the shared ignore rules.
 local function live_grep()
-  require("telescope.builtin").live_grep({
+  local opts = {
     additional_args = hidden_rg_args,
-  })
+    prompt_title = "Live Grep (query  path/glob)",
+  }
+  require("telescope.builtin").live_grep(with_path_filter(opts, require("telescope.sorters").highlighter_only(opts)))
 end
 
 -- Return the current visual selection as plain text for grep_string.
@@ -190,11 +257,14 @@ end
 local function grep_visual_selection()
   local text = get_visual_selection_text():gsub("^%s+", ""):gsub("%s+$", "")
   if text ~= "" then
-    require("telescope.builtin").grep_string({
+    local opts = {
       search = text,
-      initial_mode = "normal",
+      initial_mode = "insert",
       additional_args = hidden_rg_args,
-    })
+      prompt_title = "Selection (refine  path/glob)",
+      results_title = "Matches for " .. text:gsub("\n", "\\n"),
+    }
+    require("telescope.builtin").grep_string(with_path_filter(opts, require("telescope.config").values.generic_sorter(opts)))
   end
 end
 

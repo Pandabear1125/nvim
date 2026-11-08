@@ -71,6 +71,18 @@ Leader is `<Space>`; localleader is `\`.
 | i, n | `<C-q>` | Telescope: send results to quickfix and open it |
 | i, n | `<M-q>` | Telescope: add results to quickfix and open it |
 
+In `<leader>ff`, `<leader>gf`, `<leader>fs`, and `<leader>gs`, type **two spaces**
+in the Telescope prompt to separate the query from a file path filter:
+
+- `telescope  lua/plugins/` finds matching files or text only under that path.
+- `setup  *.lua` limits matches to Lua files.
+- `  lua/core/` filters files or visual-selection matches without an extra query.
+
+Path filters match literal path fragments or globs, relative to the search
+directory. Everything stays inside Telescope and updates as you type. Visual
+selection search starts in insert mode; the selected text stays the search term,
+and text before the two spaces optionally refines its results.
+
 ### LSP (buffer-local, active when a server attaches)
 
 | Mode | Key | Action |
