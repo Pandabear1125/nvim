@@ -40,6 +40,12 @@ Leader is `<Space>`; localleader is `\`.
 | n | `p` `P` | Paste from the system clipboard |
 | x | `p` `P` | Paste over the selection without overwriting the clipboard |
 
+On WSL, Neovim uses Windows' clipboard through `clip.exe` and `powershell.exe`.
+Both commands must be available on WSL's `PATH` (Windows interoperability must
+be enabled). macOS and other systems keep Neovim's default clipboard provider.
+After updating the config, restart Neovim and check `:checkhealth vim.provider`
+if clipboard access still fails.
+
 ### Editor tools
 
 | Mode | Key | Action |
