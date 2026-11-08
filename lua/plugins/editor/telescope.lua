@@ -79,7 +79,7 @@ local function hidden_find_command()
   end
 end
 
--- Telescope 0.1.8 can assert when a still-streaming finder is cancelled and
+-- Telescope can assert when a still-streaming finder is cancelled and
 -- libuv reports the closed pipe as a read error. Treat intentional close-time
 -- pipe errors as EOF so cancelling a picker stays quiet.
 local function patch_telescope_cancel_error()
@@ -117,6 +117,31 @@ local function patch_telescope_cancel_error()
   end
 
   telescope_async._cancel_error_patched = true
+end
+
+-- Use Neovim's native Treesitter API because nvim-treesitter main removed
+-- the parser helpers used by older Telescope releases.
+local function patch_telescope_treesitter()
+  local preview_utils = require("telescope.previewers.utils")
+  if preview_utils._native_treesitter_patched then
+    return
+  end
+
+  preview_utils.ts_highlighter = function(bufnr, ft)
+    if not ft or ft == "" then
+      return false
+    end
+
+    local lang = vim.treesitter.language.get_lang(ft) or ft
+    local parser_ok, parser_available = pcall(vim.treesitter.language.add, lang)
+    if not parser_ok or not parser_available then
+      return false
+    end
+
+    return pcall(vim.treesitter.start, bufnr, lang)
+  end
+
+  preview_utils._native_treesitter_patched = true
 end
 
 -- Open Telescope's file picker with hidden and ignored files included.
@@ -178,6 +203,7 @@ local function setup_telescope()
   local actions = require("telescope.actions")
 
   patch_telescope_cancel_error()
+  patch_telescope_treesitter()
 
   require("telescope").setup({
     defaults = {
@@ -210,7 +236,7 @@ end
 return {
   {
     "nvim-telescope/telescope.nvim",
-    tag = "0.1.8",
+    tag = "v0.2.2",
     dependencies = {
       "nvim-lua/plenary.nvim",
       {
