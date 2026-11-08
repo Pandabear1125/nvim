@@ -28,7 +28,6 @@ local function setup_mason()
   require("mason").setup()
   require("mason-lspconfig").setup({
     ensure_installed = {
-      "asm_lsp",
       "lua_ls",
       "rust_analyzer",
     },
@@ -126,12 +125,6 @@ return {
         },
       })
       vim.lsp.enable("lua_ls")
-
-      vim.lsp.config("asm_lsp", {
-        capabilities = capabilities(),
-        on_attach = lsp_on_attach,
-      })
-      vim.lsp.enable("asm_lsp")
 
       vim.lsp.config("clangd", {
         cmd = {
