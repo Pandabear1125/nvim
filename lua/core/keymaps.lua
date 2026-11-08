@@ -85,6 +85,9 @@ local function previous_quickfix_item()
 end
 
 vim.keymap.set("n", "=G", clang_or_indent, { desc = "Clang format or normal indent" })
+vim.keymap.set("x", "<leader>rp", function()
+  require("core.replace").visual()
+end, { desc = "Replace selection throughout current file" })
 
 -- Window navigation with Ctrl + hjkl
 vim.keymap.set("n", "<C-h>", "<C-w>h", opts)

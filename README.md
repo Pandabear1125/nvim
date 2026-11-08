@@ -45,10 +45,16 @@ Leader is `<Space>`; localleader is `\`.
 | Mode | Key | Action |
 | --- | --- | --- |
 | n | `=G` | clang-format the buffer (or `gg=G` when no `.clang-format`) |
+| x | `<leader>rp` | Replace every literal occurrence of the selection in the current file |
 | n | `<leader>lsp` | Restart LSP and Copilot |
 | n | `<leader>mv` | Toggle Markdown preview (Markview) |
 | n | `<C-S-j>` | Next quickfix item (centered, with flash) |
 | n | `<C-S-k>` | Previous quickfix item (centered, with flash) |
+
+Select text, press `<leader>rp`, and type its replacement in Telescope. `Enter`
+replaces all case-sensitive matches, including occurrences inside longer words.
+`Esc` cancels; an empty replacement deletes matches. One `u` undoes the entire
+replacement. Changes stay in the buffer until you save.
 
 ### Terminal
 
