@@ -104,7 +104,7 @@ and text before the two spaces optionally refines its results.
 | n | `gi` | Go to implementation |
 | n | `gt` | Go to type definition |
 | n | `gr` | List references |
-| n | `K` | Hover documentation |
+| n | `K` (Shift-K) | Hover documentation and line diagnostics |
 | n | `<leader>rn` | Rename symbol |
 | n, v | `<leader>ca` | Code action |
 | n, v | `<leader>f` | Format |
@@ -114,6 +114,10 @@ and text before the two spaces optionally refines its results.
 | n | `<leader>wa` | Add workspace folder |
 | n | `<leader>wr` | Remove workspace folder |
 | n | `<leader>wl` | List workspace folders |
+
+`K` shows line diagnostics immediately and adds the symbol's hover documentation
+to the same popup when available, preserving diagnostic colors. Press `K` again
+to focus the popup and scroll; `q` closes it. `gl` still opens diagnostics only.
 
 ### Completion (nvim-cmp, insert mode)
 
